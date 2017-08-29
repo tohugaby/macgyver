@@ -1,0 +1,26 @@
+{
+  "#": {
+    "name": "wall",
+    "type": "wall"
+  },
+  " ": {
+    "name": "ground",
+    "type": "ground"
+  },
+  "t": {
+    "name": "tube",
+    "type": "inventory"
+  },
+  "n": {
+    "name": "needle",
+    "type": "inventory"
+  },
+  "e": {
+    "name": "ether",
+    "type": "inventory"
+  },
+  "g": {
+    "name": "guard",
+    "type": "inventory"
+  }
+}
