@@ -15,12 +15,32 @@ logger = logging.getLogger(__name__)
 # ELEMENTS_TYPE must contains the name of the element as key and a dict of element 's
 # specifications according to Element class attributes
 
-
+# TODO: add a default character and a default name
 ELEMENTS_TYPE = {
-    'ground': {},
-    'wall': {},
-    'inventory': {},
-    'guard': {}
+    'ground': {
+        'walkable': True,
+        'can_be_picked_up': False,
+        'randomly_placed': False,
+        'is_exit': False
+    },
+    'wall': {
+        'walkable': False,
+        'can_be_picked_up': False,
+        'randomly_placed': False,
+        'is_exit': False
+    },
+    'inventory': {
+        'walkable': True,
+        'can_be_picked_up': True,
+        'randomly_placed': True,
+        'is_exit': False
+    },
+    'guard': {
+        'walkable': True,
+        'can_be_picked_up': False,
+        'randomly_placed': False,
+        'is_exit': True
+    }
 }
 
 DEFAULT_ELEMENT_TYPE = ELEMENTS_TYPE['ground']
