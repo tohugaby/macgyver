@@ -8,6 +8,7 @@ import sys
 import unittest
 
 import game.core as gc
+import game.default_settings as ds
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -88,6 +89,11 @@ class TestElement(unittest.TestCase):
         """
         pass
 
-    def create_element(self):
+    def test_create_element(self):
         pass
 
+    def test_create_element_from_settings(self):
+        for element_type in gc.Element.get_elements_types_list():
+            element = gc.Element.create_from_default_settings(element_type)
+            for attr in element.__dict__.keys():
+                self.assertEqual(getattr(element, attr), ds.ELEMENTS_TYPE[element_type][attr])

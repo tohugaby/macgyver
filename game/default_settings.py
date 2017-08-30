@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 ELEMENTS_TYPE = {
     'start': {
         "symbol": "s",
-        "element_name": "ground",
+        "element_name": "start",
         'walkable': True,
         'can_be_picked_up': False,
         'randomly_placed': False,

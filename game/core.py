@@ -61,7 +61,7 @@ class Element:
         """
         if element_type in cls.get_elements_types_list():
             element_dict = cls._get_default_settings_elements_types()[element_type]
-            return cls.__init__(**element_dict)
+            return cls(**element_dict)
 
 
 class Conditions:
