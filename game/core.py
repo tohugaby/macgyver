@@ -9,66 +9,51 @@ Contains main classes used in game
 
 import logging
 
-__author__ = '$USER'
+import game.default_settings
+
+__author__ = 'tom.gabriele'
 logger = logging.getLogger(__name__)
-
-# ELEMENTS_TYPE must contains the name of the element as key and a dict of element 's
-# specifications according to Element class attributes
-
-# TODO: add a default character and a default name
-ELEMENTS_TYPE = {
-    'ground': {
-        'walkable': True,
-        'can_be_picked_up': False,
-        'randomly_placed': False,
-        'is_exit': False
-    },
-    'wall': {
-        'walkable': False,
-        'can_be_picked_up': False,
-        'randomly_placed': False,
-        'is_exit': False
-    },
-    'inventory': {
-        'walkable': True,
-        'can_be_picked_up': True,
-        'randomly_placed': True,
-        'is_exit': False
-    },
-    'guard': {
-        'walkable': True,
-        'can_be_picked_up': False,
-        'randomly_placed': False,
-        'is_exit': True
-    }
-}
-
-DEFAULT_ELEMENT_TYPE = ELEMENTS_TYPE['ground']
-MAP_FILE_PATH_LIST = []  # a list of all path containing maps (makes game possibilities scalable
-
-
-# and makes unit tests easier)
 
 
 class Element:
     """
     Generic class which define either element of the map
     """
-    ELEMENTS_OF_MAP = {
+
+    def __init__(self, symbol=" ", element_name="default", walkable=True, can_be_picked_up=False,
+                 randomly_placed=False, is_start=False, is_exit=False):
+        self.symbol = symbol
+        self.element_name = element_name
+        self.walkable = walkable
+        self.can_be_picked_up = can_be_picked_up
+        self.randomly_placed = randomly_placed
+        self.is_start = is_start
+        self.is_exit = is_exit
+
+
+class Conditions:
+    """
+    define conditions to say if player win or loose the game.
+    """
+    pass
+
+
+class Labyrinth:
+    """
+    Represent a Labyrinth as an entity composed of:
+    - A map : map name, path of map files, elements composing the map.
+    - A set of success conditions,
+    - A player : player name and it's abilities: move, pick_up objects , dying, attack the guard...
+    """
+    ELEMENTS_OF_MAPS = {
         """
         How to use this dict:
         'map_name':[list_of_the_map_elements]
         """
     }
 
-    def __init__(self, symbol=" ", element_name="default", walkable=True, can_be_picked_up=False,
-                 randomly_placed=False, is_exit=False):
-        self.symbol = symbol
-        self.element_name = element_name
-        self.walkable = walkable
-        self.can_be_picked_up = can_be_picked_up
-        self.randomly_placed = randomly_placed
-        self.is_exit = is_exit
+    def __init__(self, ):
+        pass
 
     @classmethod
     def create_elements_from_map_files(cls, map_name):
@@ -83,24 +68,3 @@ class Element:
         :return:
         """
         pass
-
-
-class Player:
-    """
-    define the player name and it's abilities: move, pick_up, dying, attack
-    """
-    pass
-
-
-class Conditions:
-    """
-    define conditions to say if player win or loose the game.
-    """
-    pass
-
-
-class Labyrinth:
-    """
-
-    """
-    pass
