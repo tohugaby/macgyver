@@ -3,6 +3,10 @@
     "name": "wall",
     "type": "wall"
   },
+  "s": {
+    "name": "start",
+    "type": "start"
+  },
   " ": {
     "name": "ground",
     "type": "ground"
