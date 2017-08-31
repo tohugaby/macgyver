@@ -68,4 +68,6 @@ DEFAULT_ELEMENT_TYPE = ELEMENTS_TYPE['ground']
 # a list of all path containing maps (makes game possibilities scalable and makes unit tests easier)
 MAP_FOLDER_PATH_LIST = [
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'maps'),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'game', 'maps'),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'game', 'maps', 'example'),
 ]

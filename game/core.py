@@ -7,6 +7,7 @@ Contains main classes used in game.
 
 """
 
+import os
 import logging
 
 import game.default_settings as def_settings
@@ -103,14 +104,25 @@ class Labyrinth:
         """
     }
 
-    def __init__(self, ):
-        pass
+    def __init__(self, map_name: str, success_conditions: Conditions, player_name: str):
+        self.map = map_name
+        self.success_conditions = success_conditions
+        self.positions = self.__get_elements_positions()
+        self.player_name = player_name
+        self.player_is_alive = True
+        self.inventory = {}
 
     def __repr__(self):
-        pass
+        return self.map
 
-    @classmethod
-    def create_elements_from_map_files(cls, map_name):
+    def __get_elements_positions(self):
+        """
+        return a dictionary containing coordinates (tuple) of as keys and elements instances as values.
+        :return:
+        """
+        self.__get_map_files_path()
+
+    def __create_elements_from_map_files(self, element_dict):
         """
         allow to create all Element instances according to map file and map dict.
         if not dict is provided with map DEFAULT_MAP_DICT is used. If no correspondences exists
@@ -122,3 +134,37 @@ class Labyrinth:
         :return:
         """
         pass
+
+    def __get_map_file_structure(self):
+        """
+
+        :return:
+        """
+
+    def __get_map_files_path(self):
+        """
+
+        :return:
+        """
+        map_file_name = self.map + '.txt'
+        map_dict_file_name = self.map + '.json'
+        map_files_path = None
+
+        def search_file_in_folder(folder):
+            for root, dirs, files in os.walk(maps_folder):
+                logger.info("Searching map...")
+                if map_file_name in files and map_dict_file_name in files:
+                    logger.info("Map found !")
+                    return os.path.join(root, map_file_name), os.path.join(root, map_file_name)
+
+        for maps_folder in def_settings.MAP_FOLDER_PATH_LIST:
+            map_files_path = search_file_in_folder(maps_folder)
+            if map_files_path:
+                break
+
+        if not map_files_path:
+            raise FileNotFoundError(
+                "Files %s or %s do not exist in maps folders : %s" % (map_file_name, map_dict_file_name,
+                                                                      def_settings.MAP_FOLDER_PATH_LIST))
+
+        return map_files_path

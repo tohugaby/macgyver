@@ -1,19 +1,13 @@
 import os
 import sys
-# print(sys.path)
-# print(__file__)
-# print(os.path.dirname(__file__))
-# print(os.path.join(os.path.dirname(__file__), '..'))
-# print(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import unittest
 
 import game.core as gc
 import game.default_settings as ds
 
+# add this file root path to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-
-# print(sys.path)
 
 
 class TestConditions(unittest.TestCase):
@@ -97,3 +91,21 @@ class TestElement(unittest.TestCase):
             element = gc.Element.create_from_default_settings(element_type)
             for attr in element.__dict__.keys():
                 self.assertEqual(getattr(element, attr), ds.ELEMENTS_TYPE[element_type][attr])
+
+
+class TestLabyrinth(unittest.TestCase):
+    def setUp(self):
+        """
+        define all test's data.
+        :return:
+        """
+        pass
+
+    def test_create_labyrinth(self):
+        conditions = gc.Conditions()
+        lab = gc.Labyrinth('example_map', conditions, 'tom')
+        #print(lab)
+
+    def test_create_labyrinth_with_bad_map_name(self):
+        conditions = gc.Conditions()
+        self.assertRaises(gc.Labyrinth('doesnotexist_map', conditions, 'tom'), FileNotFoundError)
