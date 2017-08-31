@@ -104,8 +104,9 @@ class TestLabyrinth(unittest.TestCase):
     def test_create_labyrinth(self):
         conditions = gc.Conditions()
         lab = gc.Labyrinth('example_map', conditions, 'tom')
-        #print(lab)
+        print(lab.positions)
 
     def test_create_labyrinth_with_bad_map_name(self):
         conditions = gc.Conditions()
-        self.assertRaises(gc.Labyrinth('doesnotexist_map', conditions, 'tom'), FileNotFoundError)
+        with self.assertRaises(FileNotFoundError):
+            gc.Labyrinth('doesnotexist_map', conditions, 'tom')

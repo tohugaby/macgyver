@@ -27,7 +27,7 @@ ELEMENTS_TYPE = {
     },
 
     'ground': {
-        "symbol": " ",
+        "symbol": ".",
         "element_name": "ground",
         'walkable': True,
         'can_be_picked_up': False,
