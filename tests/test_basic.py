@@ -48,7 +48,6 @@ class TestConditions(unittest.TestCase):
         """
         condition = gc.Conditions(**self.condition_dict)
         assert hasattr(condition, "to_pick_up_objects")
-        print(condition)
 
     def test_create_condition_with_unrecognized_conditions(self):
         """
@@ -58,7 +57,6 @@ class TestConditions(unittest.TestCase):
         condition = gc.Conditions(**self.condition_dict2)
         assert hasattr(condition, "to_pick_up_objects")
         assert not hasattr(condition, "to_walk_on_zone")
-        print(condition)
 
     def test_create_empty_condition(self):
         """
@@ -68,7 +66,6 @@ class TestConditions(unittest.TestCase):
         condition = gc.Conditions(**self.condition_dict3)
         assert not hasattr(condition, "to_pick_up_objects")
         self.assertEqual(condition.__dict__, {})
-        print(condition)
 
 
 class TestElement(unittest.TestCase):
@@ -81,12 +78,34 @@ class TestElement(unittest.TestCase):
         define all test's data.
         :return:
         """
-        pass
+        self.element_dict = {
+            "symbol": "i",
+            "element_name": "inventory_object",
+            'walkable': True,
+            'can_be_picked_up': True,
+            'randomly_placed': True,
+            'is_start': False,
+            'is_exit': False
+        }
 
     def test_create_element(self):
-        pass
+        """
+        simple test of Element's class constructor
+        :return:
+        """
+        new_element = gc.Element(**self.element_dict)
+        self.assertIsInstance(new_element, gc.Element)
+        self.assertFalse(new_element.is_start)
+        self.assertTrue(new_element.walkable)
+        self.assertTrue(new_element.can_be_picked_up)
+        self.assertTrue(new_element.randomly_placed)
+        self.assertFalse(new_element.is_exit)
 
     def test_create_element_from_settings(self):
+        """
+        test Element creation of Element instance from settings
+        :return:
+        """
         for element_type in gc.Element.get_elements_types_list():
             element = gc.Element.create_from_default_settings(element_type)
             for attr in element.__dict__.keys():
@@ -99,14 +118,72 @@ class TestLabyrinth(unittest.TestCase):
         define all test's data.
         :return:
         """
-        pass
+        self.labyrinth = {
+            'map': 'example_map',
+            'conditions': gc.Conditions(),
+            'player_name': 'tom'
+        }
+
+        self.labyrinth_unavailable_map = {
+            'map': 'doesnotexist_map',
+            'conditions': gc.Conditions(),
+            'player_name': 'tom'
+        }
+
+        self.map_str = "#s#############\n" \
+                       "#..############\n" \
+                       "#..........####\n" \
+                       "##########....#\n" \
+                       "##########.##.#\n" \
+                       "####.......##.#\n" \
+                       "#....######.#t#\n" \
+                       "####.........##\n" \
+                       "#e.#......###n#\n" \
+                       "##.##......#..#\n" \
+                       "#..##.#######.#\n" \
+                       "#.#.#.........#\n" \
+                       "#.#.#####..####\n" \
+                       "#.............#\n" \
+                       "##g############"
+
+        self.used_char = set([char for char in self.map_str if char != '\n'])
 
     def test_create_labyrinth(self):
-        conditions = gc.Conditions()
-        lab = gc.Labyrinth('example_map', conditions, 'tom')
-        print(lab.positions)
+        """
+        test
+        Labyrinth
+        instance
+        creation
+        :return:
+        """
+        lab = gc.Labyrinth(self.labyrinth['map'], self.labyrinth['conditions'], self.labyrinth['player_name'])
+        self.assertEqual(lab.map, self.labyrinth['map'])
+        self.assertEqual(lab.player['element'].element_name, self.labyrinth['player_name'])
+        self.assertEqual(lab.row_max_index, 14)
+        self.assertEqual(lab.column_max_index, 15)
+
+        # test one of positions
+        start = lab.positions[0, 1]
+        self.assertIsInstance(start, gc.Element)
+        self.assertTrue(start.is_start)
+        self.assertTrue(start.walkable)
+        self.assertFalse(start.can_be_picked_up)
+        self.assertFalse(start.randomly_placed)
+        self.assertFalse(start.is_exit)
+
+        self.assertEqual(lab.print_map(), self.map_str)
+        self.assertEqual(lab.used_char, self.used_char)
 
     def test_create_labyrinth_with_bad_map_name(self):
+        """
+        test
+        Labyrinth
+        instance
+        creation
+        with an unavailable map file
+        :return:
+        """
         conditions = gc.Conditions()
         with self.assertRaises(FileNotFoundError):
-            gc.Labyrinth('doesnotexist_map', conditions, 'tom')
+            lab = gc.Labyrinth(self.labyrinth_unavailable_map['map'], self.labyrinth_unavailable_map['conditions'],
+                               self.labyrinth_unavailable_map['player_name'])

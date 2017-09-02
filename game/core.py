@@ -11,6 +11,7 @@ import os
 import logging
 
 import game.default_settings as def_settings
+from game.default_settings import PLAYER_TYPE
 
 __author__ = 'tom.gabriele'
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class Element:
     """
 
     def __init__(self, symbol=" ", element_name="default", walkable=True, can_be_picked_up=False,
-                 randomly_placed=False, is_start=False, is_exit=False):
+                 randomly_placed=False, is_start=False, is_exit=False, is_player=False):
         self.symbol = symbol
         self.element_name = element_name
         self.walkable = walkable
@@ -33,6 +34,7 @@ class Element:
         self.randomly_placed = randomly_placed
         self.is_start = is_start
         self.is_exit = is_exit
+        self.is_player = is_player
 
     def __repr__(self):
         return "'{}' {}".format(self.symbol, self.element_name)
@@ -103,17 +105,45 @@ class Labyrinth:
         'map_name':[list_of_the_map_elements]
         """
     }
+    used_char = set()
 
     def __init__(self, map_name: str, success_conditions: Conditions, player_name: str):
+
         self.map = map_name
         self.success_conditions = success_conditions
+        self.row_max_index = 0
+        self.column_max_index = 0
         self.positions = self.__get_elements_positions()
-        self.player_name = player_name
-        self.player_is_alive = True
-        self.inventory = {}
+        # self player is a dict containing
+        # 'element' containing Element instance, 'is_alive' status , 'position' and 'inventory' dict
+        self.player = self.__create_player_element(player_name)
 
     def __repr__(self):
         return self.map
+
+    def print_map(self):
+        """
+        print a CLI representation of the map acccording to self.positions and player_position attribute
+        :return:
+        """
+        map_str = ''
+
+        for r in range(self.row_max_index + 1):
+            for c in range(self.column_max_index + 1):
+                try:
+                    if isinstance(self.positions[r, c], Element):
+                        if (r, c) == self.player['position']:
+                            map_str += self.player['element'].symbol
+                        else:
+                            map_str += self.positions[r, c].symbol
+                    else:
+                        map_str += str(self.positions[r, c])
+                except KeyError as e:
+                    if r == self.row_max_index and c == self.column_max_index:
+                        return map_str
+                    else:
+                        raise e
+        return map_str
 
     def __get_elements_positions(self):
         """
@@ -121,6 +151,21 @@ class Labyrinth:
         :return:
         """
         return self.__get_map_file_structure()
+
+    def __create_player_element(self, player_name: str):
+        """
+        create player attribute values: element instance and initial position, and state
+        :return:
+        """
+        # TODO: Write unit test
+        authorized_symbol = list(set(def_settings.PLAYER_SYMBOLS).difference(self.used_char))
+        element = Element.create_from_default_settings(element_type=PLAYER_TYPE)
+        element.element_name = player_name
+
+        if element.symbol in self.used_char:
+            element.symbol = authorized_symbol[0]
+
+        return dict(element=element, is_alive=True, position=tuple(), inventory=dict())
 
     def __create_element_from_map_files(self, char, dict_path):
         """
@@ -138,10 +183,20 @@ class Labyrinth:
 
         with open(dict_path) as file:
             json_dict = json.load(file)
-
-        element = Element.create_from_default_settings(json_dict[char]['type'])
-        element.element_name = json_dict[char]['name']
-        element.symbol = char
+        # TODO: Write unit test :with the case their is nothing provided in json file or their is a missing type
+        try:
+            element = Element.create_from_default_settings(json_dict[char]['type'])
+            element.element_name = json_dict[char]['name']
+            element.symbol = char
+        except KeyError as e:
+            logger.warning("Element type of char %s not defined in %s. Default type %s will be applied" % (
+                char, json_dict, def_settings.DEFAULT_ELEMENT_TYPE))
+            element = Element.create_from_default_settings(def_settings.DEFAULT_ELEMENT_TYPE)
+            element.symbol = char
+        except Exception:
+            raise
+            # we add the symbol to used symbol
+        self.used_char = set(list(self.used_char) + [char])
 
         return element
 
@@ -154,12 +209,18 @@ class Labyrinth:
         structure = {}
         with open(map_path, 'r') as file:
             lines = file.readlines()
+            r = 0
             for line in lines:
-                row = lines.index(line)
+                self.row_max_index = row = r
+                c = 0
                 for char in line:
-                    column = line.index(char)
+                    column = c
+                    if c > self.column_max_index:  # Last line has maybe no carriage return and could be shorter
+                        #     # we don't want to take it into account.
+                        self.column_max_index = c  # we take into account carriage return to print correctly map
                     structure[row, column] = self.__create_element_from_map_files(char, dict_path)
-
+                    c += 1
+                r += 1
         return structure
 
     def __get_map_files_path(self):
@@ -172,7 +233,7 @@ class Labyrinth:
         map_files_path = None
 
         def search_file_in_folder(folder):
-            for root, dirs, files in os.walk(maps_folder):
+            for root, dirs, files in os.walk(folder):
                 logger.info("Searching map...")
                 if map_file_name in files and map_dict_file_name in files:
                     logger.info("Map found !")
@@ -187,5 +248,4 @@ class Labyrinth:
             raise FileNotFoundError(
                 "Files %s or %s do not exist in maps folders : %s" % (map_file_name, map_dict_file_name,
                                                                       def_settings.MAP_FOLDER_PATH_LIST))
-        print(map_files_path)
         return map_files_path
