@@ -48,6 +48,7 @@ class TestConditions(unittest.TestCase):
         """
         condition = gc.Conditions(**self.condition_dict)
         assert hasattr(condition, "to_pick_up_objects")
+        self.assertEqual(condition.__repr__(), "to_pick_up_objects : {'needle': 1, 'small_tube': 1, 'ether': 1}")
 
     def test_create_condition_with_unrecognized_conditions(self):
         """
@@ -57,6 +58,7 @@ class TestConditions(unittest.TestCase):
         condition = gc.Conditions(**self.condition_dict2)
         assert hasattr(condition, "to_pick_up_objects")
         assert not hasattr(condition, "to_walk_on_zone")
+        self.assertEqual(condition.__repr__(), "to_pick_up_objects : {'needle': 1, 'small_tube': 1, 'ether': 1}")
 
     def test_create_empty_condition(self):
         """
@@ -66,6 +68,7 @@ class TestConditions(unittest.TestCase):
         condition = gc.Conditions(**self.condition_dict3)
         assert not hasattr(condition, "to_pick_up_objects")
         self.assertEqual(condition.__dict__, {})
+        self.assertEqual(condition.__repr__(), "")
 
 
 class TestElement(unittest.TestCase):
@@ -100,6 +103,7 @@ class TestElement(unittest.TestCase):
         self.assertTrue(new_element.can_be_picked_up)
         self.assertTrue(new_element.randomly_placed)
         self.assertFalse(new_element.is_exit)
+        self.assertEqual(new_element.__repr__(), "'i' inventory_object")
 
     def test_create_element_from_settings(self):
         """
@@ -148,6 +152,22 @@ class TestLabyrinth(unittest.TestCase):
 
         self.used_char = set([char for char in self.map_str if char != '\n'])
 
+        self.map_str_with_player = "#X#############\n" \
+                                   "#..############\n" \
+                                   "#..........####\n" \
+                                   "##########....#\n" \
+                                   "##########.##.#\n" \
+                                   "####.......##.#\n" \
+                                   "#....######.#t#\n" \
+                                   "####.........##\n" \
+                                   "#e.#......###n#\n" \
+                                   "##.##......#..#\n" \
+                                   "#..##.#######.#\n" \
+                                   "#.#.#.........#\n" \
+                                   "#.#.#####..####\n" \
+                                   "#.............#\n" \
+                                   "##g############"
+
     def test_create_labyrinth(self):
         """
         test
@@ -158,6 +178,7 @@ class TestLabyrinth(unittest.TestCase):
         """
         lab = gc.Labyrinth(self.labyrinth['map'], self.labyrinth['conditions'], self.labyrinth['player_name'])
         self.assertEqual(lab.map, self.labyrinth['map'])
+        self.assertEqual(lab.__repr__(), self.labyrinth['map'])
         self.assertEqual(lab.player['element'].element_name, self.labyrinth['player_name'])
         self.assertEqual(lab.row_max_index, 14)
         self.assertEqual(lab.column_max_index, 15)
@@ -171,8 +192,21 @@ class TestLabyrinth(unittest.TestCase):
         self.assertFalse(start.randomly_placed)
         self.assertFalse(start.is_exit)
 
+        # Test print map metho
         self.assertEqual(lab.print_map(), self.map_str)
+
+        # test used_char
         self.assertEqual(lab.used_char, self.used_char)
+
+    def test_print_map_when_player_is_in(self):
+        """
+
+        :return:
+        """
+        lab = gc.Labyrinth(self.labyrinth['map'], self.labyrinth['conditions'], self.labyrinth['player_name'])
+        lab.player['position'] = (0, 1)
+        # Test print map metho
+        self.assertEqual(lab.print_map(), self.map_str_with_player)
 
     def test_create_labyrinth_with_bad_map_name(self):
         """
