@@ -20,6 +20,19 @@ logger = logging.getLogger(__name__)
 # logging.basicConfig(level=logging.DEBUG)
 
 
+class MissingElementException(Exception):
+    """Exception to raise when an mandatory element miss on a map"""
+
+    def __init__(self, labyrinth, key, message="A mandatory element is missing"):
+        """
+
+        :param error_arguments:
+        """
+        super(MissingElementException, self).__init__(labyrinth, key, message)
+        self.labyrinth = labyrinth
+        self.key = key
+
+
 class Element:
     """
     Generic class which define either element of the map
@@ -151,6 +164,59 @@ class Labyrinth:
         :return:
         """
         return self.__get_map_file_structure()
+
+    def start_game(self):
+        """
+
+        :return:
+        """
+        for key, element in self.positions.items():
+            if not isinstance(element, str):
+                if element.is_start:
+                    return key
+        raise MissingElementException(self,
+                                      'is_start',
+                                      "There is no start point in this map. Please modify txt and json map file")
+
+    def __ask_direction(self):
+        """
+        :return:
+        """
+
+        return input("Choisir une direction : ")
+
+    def move_player(self):
+        """
+        change player position on map according to button pressed
+        and attributes of targetted position (Element) on the map
+        :param keyboard_button: pressed button on keyboard
+        :return:
+        """
+        next_direction = self.__ask_direction()
+
+    def __is_next_position_walkable(self, next_position: tuple):
+        """
+        return True if next position is walkable.
+        :param next_position:
+        :return:
+        """
+        return self.positions[next_position].walkable
+
+    def __is_next_position_pickable(self, next_position: tuple):
+        """
+        return True if position is pickable.
+        :param next_position:
+        :return:
+        """
+        return self.positions[next_position].can_be_picked_up
+
+    def __is_next_position_exit(self, next_position: tuple):
+        """
+        return True if position is the exit
+        :param next_position:
+        :return:
+        """
+        return self.positions[next_position].is_exit
 
     def __create_player_element(self, player_name: str):
         """
