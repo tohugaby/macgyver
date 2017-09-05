@@ -69,7 +69,7 @@ ELEMENTS_TYPE = {
         'is_exit': False,
         'is_player': False
     },
-    'guard': {
+    'exit': {
         "symbol": "g",
         "element_name": "guard",
         'walkable': True,
