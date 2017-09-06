@@ -180,8 +180,8 @@ class TestLabyrinth(unittest.TestCase):
         self.assertEqual(lab.map, self.labyrinth['map'])
         self.assertEqual(lab.__repr__(), self.labyrinth['map'])
         self.assertEqual(lab.player['element'].element_name, self.labyrinth['player_name'])
-        self.assertEqual(lab.row_max_index, 14)
-        self.assertEqual(lab.column_max_index, 15)
+        self.assertEqual(lab.max_row_index, 14)
+        self.assertEqual(lab.max_column_index, 15)
 
         # test one of positions
         start = lab.positions[0, 1]

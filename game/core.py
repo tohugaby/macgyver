@@ -110,29 +110,57 @@ class Conditions:
     @staticmethod
     def __get_method_attached_to_attribute_name(attribute_name):
         """
-
+        determine method attached to valid attribute
         :return:
         """
-        # reg = r"^check_(.*)$"
-        # expression = re.search(reg, method_name)
-        # return expression.group(1)
         return "check_" + attribute_name
+
+    @staticmethod
+    def __get_attribute_attached_to_method(method_name):
+        """
+        dertimine attribute attached to check method
+        :return:
+        """
+        reg = r"^check_(.*)$"
+        expression = re.search(reg, method_name)
+        return expression.group(1)
+
+    @staticmethod
+    def check_conditions(labyrinth):
+        """
+        browse check conditions method
+        :param labyrinth:
+        :return:
+        """
+
+        for check_method in labyrinth.success_conditions.get_list_of_active_checks():
+            if getattr(labyrinth.success_conditions, check_method)(labyrinth) is False:
+                print("{}: constraint not satisfied".format(check_method))
+                return False
+        return True
 
     def get_list_of_active_checks(self):
         """
-
+        determine the list of active method according to instance attributes
         :return: the list of check method needed relative to Condition instance attributes
         """
 
         return [self.__get_method_attached_to_attribute_name(key) for key in self.__dict__.keys()]
 
-    def check_to_pick_up_objects(self, inventory: dict):
+    def check_to_pick_up_objects(self, labyrinth):
         """
         compare inventory with instance attribute 'to_pick_up_objects'
         :return:
         """
+        attribute_name = self.__get_attribute_attached_to_method(self.check_to_pick_up_objects.__name__)
 
-        return True
+        inventory = {}
+        for key, value in labyrinth.player['inventory'].items():
+            new_key = key.element_name
+            inventory[new_key] = value
+        logger.info("objects to pick up: {} ".format(getattr(self, attribute_name)))
+        logger.info("inventory : {}".format(inventory))
+        return getattr(self, attribute_name) == inventory
 
 
 class Labyrinth:
@@ -155,7 +183,7 @@ class Labyrinth:
         self.player = self.__create_player_element(player_name)
 
     def __repr__(self):
-        return "{} : \n{}".format(self.map, self.print_map())
+        return "{}".format(self.map, self.print_map())
 
     # GAME METHODS
     def print_map(self):
@@ -237,10 +265,13 @@ class Labyrinth:
     @staticmethod
     def __ask_direction():
         """
+        wait for user input
         :return:
         """
-
-        return input("Choisir une direction Z,S,W,Q : ")
+        direction = ""
+        while direction not in ('Z', 'S', 'W', 'Q'):
+            direction = input("Choisir une direction Z,S,W,Q : ").upper()
+        return direction
 
     # GAME AND CONDITIONS CHEKING METHODS
     def game_finished(self):
@@ -255,11 +286,7 @@ class Labyrinth:
         are success condition satisfied
         :return:
         """
-        for check_method in self.success_conditions.get_list_of_active_checks():
-            print(getattr(self.success_conditions,check_method)(self.player['inventory']))
-            return False
-        return True
-
+        return Conditions.check_conditions(self)
 
     # POSITIONS CHECKING METHODS
     def __is_position_on_map(self, position: tuple):
@@ -432,7 +459,7 @@ class Labyrinth:
             if not isinstance(element, str):
                 if element.is_exit:
                     exit_list.append(key)
-        if exit_list != []:
+        if exit_list:
             return exit_list
         else:
             raise MissingElementException(self,

@@ -9,11 +9,11 @@ def main():
     conditions = gc.Conditions(**{
         "to_pick_up_objects": {
             "needle": 1,
-            "small_tube": 1,
+            "tube": 1,
             "ether": 1
         }
     })
-    labyrinth = gc.Labyrinth(map_name='example_map', success_conditions=conditions, player_name='tom')
+    labyrinth = gc.Labyrinth(map_name='small_map', success_conditions=conditions, player_name='tom')
     print(labyrinth.print_map())
     print("\n")
     labyrinth.start_game()
