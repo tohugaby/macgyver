@@ -217,7 +217,6 @@ class TestLabyrinth(unittest.TestCase):
         with an unavailable map file
         :return:
         """
-        conditions = gc.Conditions()
         with self.assertRaises(FileNotFoundError):
-            lab = gc.Labyrinth(self.labyrinth_unavailable_map['map'], self.labyrinth_unavailable_map['conditions'],
-                               self.labyrinth_unavailable_map['player_name'])
+            gc.Labyrinth(self.labyrinth_unavailable_map['map'], self.labyrinth_unavailable_map['conditions'],
+                         self.labyrinth_unavailable_map['player_name'])
