@@ -10,6 +10,7 @@ import json
 import operator
 import os
 import logging
+import random
 import re
 
 import game.default_settings as def_settings
@@ -352,7 +353,25 @@ class Labyrinth:
                                                                       def_settings.MAP_FOLDER_PATH_LIST))
         return map_files_path
 
-    def __create_element_from_map_files(self, char, dict_path):
+    def __map_to_str(self):
+        """
+        translate txt map file to str
+        :return:
+        """
+        pass
+
+    def __map_json_to_dict(self):
+        """
+        translate json description file to dict.
+        :return: name and type of element of the map
+        :type:dict
+        """
+        dict_path = self.__get_map_files_path()[1]
+        with open(dict_path) as file:
+            json_dict = json.load(file)
+        return json_dict
+
+    def __create_element_from_map_files(self, char):
         """
         allow to create all Element instances according to map file and map dict.
         if not dict is provided with map DEFAULT_MAP_DICT is used. If no correspondences exists
@@ -365,8 +384,7 @@ class Labyrinth:
         if char == '\n':
             return char
 
-        with open(dict_path) as file:
-            json_dict = json.load(file)
+        json_dict = self.__map_json_to_dict()
         # TODO: Write unit test :with the case their is nothing provided in json file or their is a missing type
         try:
             element = Element.create_from_default_settings(json_dict[char]['type'])
@@ -387,6 +405,44 @@ class Labyrinth:
 
         return element
 
+    @staticmethod
+    def __get_walkable_elements_coordonates(structure):
+        """
+        list coordonates of walkable element of the map
+        :param structure:
+        :return:
+        """
+        elements_coordinates = [key for key, value in structure.items() if isinstance(value, Element)]
+        walkable_coordinates = [key for key in elements_coordinates if
+                                structure[key].walkable and not (structure[key].is_start or structure[key].is_exit)]
+        print(walkable_coordinates)
+        return walkable_coordinates
+
+    def __get_randomly_placed_elements(self):
+        """
+        extract randomly placed elements from description json file
+        :return:
+        """
+        objects_to_place = {}
+        json_dict = self.__map_json_to_dict()
+        for key, value in json_dict.items():
+            element_type = value['type']
+            if def_settings.ELEMENTS_TYPE[element_type]['randomly_placed']:
+                objects_to_place[key] = value
+        print(objects_to_place)
+        return objects_to_place
+
+    def __randomly_place_inventory_objects_on_map(self, structure: dict):
+        """
+
+        :param structure:
+        :return:
+        """
+        available_coordonates = self.__get_walkable_elements_coordonates(structure)
+        for key, element in self.__get_randomly_placed_elements().items():
+            i = random.randrange(len(available_coordonates))
+            structure[available_coordonates[i]] = self.__create_element_from_map_files(key)
+
     def __get_map_file_structure(self):
         """
 
@@ -402,9 +458,12 @@ class Labyrinth:
                 c = 0
                 for char in line:
                     column = c
-                    structure[row, column] = self.__create_element_from_map_files(char, dict_path)
+                    structure[row, column] = self.__create_element_from_map_files(char)
                     c += 1
                 r += 1
+
+        self.__randomly_place_inventory_objects_on_map(structure)
+
         return structure
 
     @property
