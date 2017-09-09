@@ -14,6 +14,8 @@ import string
 __author__ = 'tom.gabriele'
 logger = logging.getLogger(__name__)
 
+ROOT_PATH = os.path.dirname(__file__)
+
 # ELEMENTS_TYPE must contains the name of the element as key and a dict of element 's
 # specifications according to Element class attributes
 ELEMENTS_TYPE = {
@@ -25,7 +27,8 @@ ELEMENTS_TYPE = {
         'randomly_placed': False,
         'is_start': False,
         'is_exit': False,
-        'is_player': True
+        'is_player': True,
+        'picture': 'mac.png'
     },
 
     'start': {
@@ -47,7 +50,9 @@ ELEMENTS_TYPE = {
         'randomly_placed': False,
         'is_start': False,
         'is_exit': False,
-        'is_player': False
+        'is_player': False,
+        'picture': 'floor.png'
+
     },
     'wall': {
         "symbol": "#",
@@ -57,7 +62,8 @@ ELEMENTS_TYPE = {
         'randomly_placed': False,
         'is_start': False,
         'is_exit': False,
-        'is_player': False
+        'is_player': False,
+        'picture': 'wall.png'
     },
     'inventory': {
         "symbol": "i",
@@ -77,7 +83,9 @@ ELEMENTS_TYPE = {
         'randomly_placed': False,
         'is_start': False,
         'is_exit': True,
-        'is_player': False
+        'is_player': False,
+        'picture': 'guard.png'
+
     }
 }
 DEFAULT_ELEMENT_TYPE = 'ground'

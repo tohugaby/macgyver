@@ -12,6 +12,9 @@ import os
 import logging
 import random
 import re
+import pygame
+
+from pygame.locals import *
 
 import game.default_settings as def_settings
 
@@ -43,7 +46,8 @@ class Element:
     """
 
     def __init__(self, symbol=" ", element_name="default", walkable=True, can_be_picked_up=False,
-                 randomly_placed=False, is_start=False, is_exit=False, is_player=False):
+                 randomly_placed=False, is_start=False, is_exit=False, is_player=False,
+                 picture=None):
         self.symbol = symbol
         self.element_name = element_name
         self.walkable = walkable
@@ -52,6 +56,12 @@ class Element:
         self.is_start = is_start
         self.is_exit = is_exit
         self.is_player = is_player
+        # if no image is provided we take default image
+        # TODO: provide a default image for each type of element in default settings
+        # if picture is None:
+        #     self.picture = def_settings.ELEMENTS_TYPE[def_settings.DEFAULT_ELEMENT_TYPE]['picture']
+        # else:
+        self.picture = picture
 
     def __repr__(self):
         return "'{}' {}".format(self.symbol, self.element_name)
@@ -219,6 +229,24 @@ class Labyrinth:
         logger.info("\nGetting initial position of player %s\n" % self.player['element'].element_name)
         print("\nGetting initial position of player %s \n" % self.player['element'].element_name)
         self.__get_player_initial_position()
+
+        pygame.init()
+        window = pygame.display.set_mode((600, 600))
+        for key, element in self.positions.items():
+            if not isinstance(element, str):
+                row, col = key
+                if element.picture is not None:
+                    pict = element.picture
+                    picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
+                    sprite = pygame.image.load(picture_path).convert()
+                    window.blit(sprite, (col * 40, row * 40))
+                if (row, col) == self.player['position']:
+                    player = self.player['element'].picture
+                    player_picture_path = os.path.join(def_settings.ROOT_PATH, 'media', player)
+                    player_sprite = pygame.image.load(player_picture_path).convert()
+                    window.blit(player_sprite, (col * 40, row * 40))
+
+        pygame.display.flip()
 
         while not self.game_finished():
             self.checked_conditions()
