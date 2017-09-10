@@ -39,7 +39,8 @@ ELEMENTS_TYPE = {
         'randomly_placed': False,
         'is_start': True,
         'is_exit': False,
-        'is_player': False
+        'is_player': False,
+        'picture': None
     },
 
     'ground': {
@@ -51,7 +52,7 @@ ELEMENTS_TYPE = {
         'is_start': False,
         'is_exit': False,
         'is_player': False,
-        'picture': None #'floor.png'
+        'picture': None
 
     },
     'wall': {
@@ -73,7 +74,8 @@ ELEMENTS_TYPE = {
         'randomly_placed': True,
         'is_start': False,
         'is_exit': False,
-        'is_player': False
+        'is_player': False,
+        'picture': 'default.png'
     },
     'exit': {
         "symbol": "g",
@@ -91,6 +93,8 @@ ELEMENTS_TYPE = {
 DEFAULT_ELEMENT_TYPE = 'ground'
 PLAYER_TYPE = 'player'
 PLAYER_SYMBOLS = list(set(['X', '@', '0', '&'] + list(string.punctuation)))
+
+DEFAULT_PICTURE = 'default.png'
 
 # a list of all path containing maps (makes game possibilities scalable and makes unit tests easier)
 MAP_FOLDER_PATH_LIST = [

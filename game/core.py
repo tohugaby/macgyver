@@ -7,15 +7,14 @@ Contains main classes used in game.
 
 """
 import json
+import logging
 import operator
 import os
-import logging
 import random
 import re
+
 import pygame
-
-from pygame.locals import *
-
+from pygame.locals import QUIT, KEYDOWN, K_UP, K_RIGHT, K_DOWN, K_LEFT
 import game.default_settings as def_settings
 
 __author__ = 'tom.gabriele'
@@ -56,11 +55,6 @@ class Element:
         self.is_start = is_start
         self.is_exit = is_exit
         self.is_player = is_player
-        # if no image is provided we take default image
-        # TODO: provide a default image for each type of element in default settings
-        # if picture is None:
-        #     self.picture = def_settings.ELEMENTS_TYPE[def_settings.DEFAULT_ELEMENT_TYPE]['picture']
-        # else:
         self.picture = picture
 
     def __repr__(self):
@@ -81,7 +75,7 @@ class Element:
         contributors who want to use create_from_default_settings method.
         :return: a list of elements type
         """
-        return [key for key in cls._get_default_settings_elements_types().keys()]
+        return [key for key in cls._get_default_settings_elements_types()]
 
     @classmethod
     def create_from_default_settings(cls, element_type: str):
@@ -109,7 +103,8 @@ class Conditions:
                 logger.warning(
                     "'%s' is not a valid condition. It means this condition will "
                     "not be added to %s instance and not checked "
-                    "because related functionality is not yet implemented." % (key, self.__class__))
+                    "because related functionality is not yet implemented." % (
+                        key, self.__class__))
 
     def __repr__(self):
         conditions_repr = ""
@@ -156,14 +151,15 @@ class Conditions:
         :return: the list of check method needed relative to Condition instance attributes
         """
 
-        return [self.__get_method_attached_to_attribute_name(key) for key in self.__dict__.keys()]
+        return [self.__get_method_attached_to_attribute_name(key) for key in self.__dict__]
 
     def check_to_pick_up_objects(self, labyrinth):
         """
         compare inventory with instance attribute 'to_pick_up_objects'
         :return:
         """
-        attribute_name = self.__get_attribute_attached_to_method(self.check_to_pick_up_objects.__name__)
+        check_method_name = self.check_to_pick_up_objects.__name__
+        attribute_name = self.__get_attribute_attached_to_method(check_method_name)
 
         inventory = {}
         for key, value in labyrinth.player['inventory'].items():
@@ -200,7 +196,8 @@ class Labyrinth:
     # GAME METHODS
     def print_map(self):
         """
-        print a CLI representation of the map acccording to self.positions and player_position attribute
+        print a CLI representation of the map acccording to self.positions
+        and player_position attribute
         :return:
         """
         map_str = ''
@@ -257,17 +254,20 @@ class Labyrinth:
         execution of the game
         :return:
         """
-        logger.info("\nGetting initial position of player %s\n" % self.player['element'].element_name)
+        logger.info(
+            "\nGetting initial position of player %s\n" % self.player['element'].element_name)
         print("\nGetting initial position of player %s \n" % self.player['element'].element_name)
         continue_game = True
         self.__get_player_initial_position()
         pygame.init()
-
+        pygame.key.set_repeat(400, 30)
         window = pygame.display.set_mode((600, 720))
         player_sprite = self.draw_player()
         player_position = player_sprite.get_rect()
-        player_position.top, player_position.left = tuple([40 * i for i in self.player['position']])
+        player_position.top, player_position.left = tuple(
+            [40 * i for i in self.player['position']])
         player_position.top += 120
+
         while continue_game:
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -285,23 +285,21 @@ class Labyrinth:
                         window.blit(self.draw_element(element), (col * 40, row * 40 + 120))
             window.blit(player_sprite, player_position)
 
-            myfont = pygame.font.SysFont("monospace", 15)
-
+            myfont = pygame.font.SysFont("monospace", 20)
             row, column = 1, 1
             for key, obj in self.player['inventory'].items():
                 r, c = row * 40, column * 40
-
                 pict = obj['picture']
                 picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
                 inv = pygame.image.load(picture_path).convert_alpha()
+                # render text
                 label = myfont.render(str(obj['nb']), 1, (255, 255, 0))
                 window.blit(inv, (c, r))
                 window.blit(label, (c + 40, r))
                 column += 1
-            # render text
-
 
             pygame.display.flip()
+            window.fill((0, 0, 0))
 
         # check if conditions are satisfied
         if self.checked_conditions():
@@ -422,7 +420,8 @@ class Labyrinth:
                 logger.info("Searching map...")
                 if map_file_name in files and map_dict_file_name in files:
                     logger.info("Map found !")
-                    return os.path.join(root, map_file_name), os.path.join(root, map_dict_file_name)
+                    return os.path.join(root, map_file_name), os.path.join(root,
+                                                                           map_dict_file_name)
 
         for maps_folder in def_settings.MAP_FOLDER_PATH_LIST:
             map_files_path = search_file_in_folder(maps_folder)
@@ -431,8 +430,9 @@ class Labyrinth:
 
         if not map_files_path:
             raise FileNotFoundError(
-                "Files %s or %s do not exist in maps folders : %s" % (map_file_name, map_dict_file_name,
-                                                                      def_settings.MAP_FOLDER_PATH_LIST))
+                "Files %s or %s do not exist in maps folders : %s" % (
+                    map_file_name, map_dict_file_name,
+                    def_settings.MAP_FOLDER_PATH_LIST))
         return map_files_path
 
     def __map_to_str(self):
@@ -467,7 +467,8 @@ class Labyrinth:
             return char
 
         json_dict = self.__map_json_to_dict()
-        # TODO: Write unit test :with the case their is nothing provided in json file or their is a missing type
+        # TODO: Write unit test :when their is nothing provided in json file or their is a missing
+        # type
         try:
             element = Element.create_from_default_settings(json_dict[char]['type'])
             element.element_name = json_dict[char]['name']
@@ -497,10 +498,11 @@ class Labyrinth:
         :param structure:
         :return:
         """
-        elements_coordinates = [key for key, value in structure.items() if isinstance(value, Element)]
+        elements_coordinates = [key for key, value in structure.items() if
+                                isinstance(value, Element)]
         walkable_coordinates = [key for key in elements_coordinates if
-                                structure[key].walkable and not (structure[key].is_start or structure[key].is_exit)]
-        print(walkable_coordinates)
+                                structure[key].walkable and not (
+                                    structure[key].is_start or structure[key].is_exit)]
         return walkable_coordinates
 
     def __get_randomly_placed_elements(self):
@@ -532,7 +534,7 @@ class Labyrinth:
 
         :return:
         """
-        map_path, dict_path = self.__get_map_files_path()
+        map_path = self.__get_map_files_path()[0]
         structure = {}
         with open(map_path, 'r') as file:
             lines = file.readlines()
@@ -552,7 +554,8 @@ class Labyrinth:
 
     def __get_elements_positions(self):
         """
-        return a dictionary containing coordinates (tuple) of as keys and elements instances as values.
+        return a dictionary containing coordinates (tuple) of as keys
+        and elements instances as values.
         :return:
         """
         return self.__get_map_file_structure()
@@ -572,7 +575,7 @@ class Labyrinth:
             element.symbol = authorized_symbol[0]
 
         inventory = dict()
-        for key, obj in self.pickable_elements_position.items():
+        for obj in self.pickable_elements_position.values():
             inventory[obj.element_name] = {'picture': obj.picture,
                                            'nb': 0}
 
@@ -606,7 +609,7 @@ class Labyrinth:
         :return: max row index
         """
         if self.positions != {}:
-            return sorted([key[0] for key in self.positions.keys()])[-1]
+            return sorted([key[0] for key in self.positions])[-1]
         return 0
 
     @property
@@ -616,7 +619,7 @@ class Labyrinth:
         :return: max row index
         """
         if self.positions != {}:
-            return sorted([key[1] for key in self.positions.keys()])[-1]
+            return sorted([key[1] for key in self.positions])[-1]
         return 0
 
     @property
@@ -631,7 +634,8 @@ class Labyrinth:
                     return key
         raise MissingElementException(self,
                                       'is_start',
-                                      "There is no start point in this map. Please modify txt and json map file")
+                                      "There is no start point in this map. "
+                                      "Please modify txt and json map file")
 
     @property
     def exit_positions(self):
@@ -649,4 +653,5 @@ class Labyrinth:
         else:
             raise MissingElementException(self,
                                           'is_exit',
-                                          "There is no exit point in this map. Please modify txt and json map file")
+                                          "There is no exit point in this map. "
+                                          "Please modify txt and json map file")
