@@ -167,8 +167,8 @@ class Conditions:
 
         inventory = {}
         for key, value in labyrinth.player['inventory'].items():
-            new_key = key.element_name
-            inventory[new_key] = value
+            new_key = key
+            inventory[new_key] = value['nb']
         logger.info("objects to pick up: {} ".format(getattr(self, attribute_name)))
         logger.info("inventory : {}".format(inventory))
         return getattr(self, attribute_name) == inventory
@@ -192,6 +192,7 @@ class Labyrinth:
         # self player is a dict containing
         # 'element': Element instance, 'is_alive' status , 'position' and 'inventory' dict
         self.player = self.__create_player_element(player_name)
+        self.quit = False
 
     def __repr__(self):
         return "{}".format(self.map, self.print_map())
@@ -221,37 +222,86 @@ class Labyrinth:
                         raise e
         return map_str
 
-    def start_game(self):
+    def draw_background(self):
         """
 
         :return:
         """
+        background_path = os.path.join(def_settings.ROOT_PATH, 'media', 'background.jpg')
+        background = pygame.image.load(background_path).convert()
+        return background
+
+    def draw_element(self, element):
+        """
+        draw elements in graphical mod
+        :param element:
+        :return:
+        """
+        pict = element.picture
+        picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
+        sprite = pygame.image.load(picture_path).convert_alpha()
+        return sprite
+
+    def draw_player(self):
+        """
+        draw player in graphical mod
+        :return:
+        """
+        player = self.player['element'].picture
+        player_picture_path = os.path.join(def_settings.ROOT_PATH, 'media', player)
+        player_sprite = pygame.image.load(player_picture_path).convert_alpha()
+        return player_sprite
+
+    def start_game(self):
+        """
+        execution of the game
+        :return:
+        """
         logger.info("\nGetting initial position of player %s\n" % self.player['element'].element_name)
         print("\nGetting initial position of player %s \n" % self.player['element'].element_name)
+        continue_game = True
         self.__get_player_initial_position()
-
         pygame.init()
-        window = pygame.display.set_mode((600, 600))
-        for key, element in self.positions.items():
-            if not isinstance(element, str):
-                row, col = key
-                if element.picture is not None:
-                    pict = element.picture
-                    picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
-                    sprite = pygame.image.load(picture_path).convert()
-                    window.blit(sprite, (col * 40, row * 40))
-                if (row, col) == self.player['position']:
-                    player = self.player['element'].picture
-                    player_picture_path = os.path.join(def_settings.ROOT_PATH, 'media', player)
-                    player_sprite = pygame.image.load(player_picture_path).convert()
-                    window.blit(player_sprite, (col * 40, row * 40))
 
-        pygame.display.flip()
+        window = pygame.display.set_mode((600, 720))
+        player_sprite = self.draw_player()
+        player_position = player_sprite.get_rect()
+        player_position.top, player_position.left = tuple([40 * i for i in self.player['position']])
+        player_position.top += 120
+        while continue_game:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    continue_game = False
+                if event.type == KEYDOWN:
+                    line_move, column_move = self.move_player(event.key)
+                    player_position = player_position.move(column_move * 40, line_move * 40)
+                    continue_game = not self.game_finished()
 
-        while not self.game_finished():
-            self.checked_conditions()
-            self.move_player()
-            print(self.print_map())
+            window.blit(self.draw_background(), (0, 120))
+            for key, element in self.positions.items():
+                if not isinstance(element, str):
+                    row, col = key
+                    if element.picture is not None:
+                        window.blit(self.draw_element(element), (col * 40, row * 40 + 120))
+            window.blit(player_sprite, player_position)
+
+            myfont = pygame.font.SysFont("monospace", 15)
+
+            row, column = 1, 1
+            for key, obj in self.player['inventory'].items():
+                r, c = row * 40, column * 40
+
+                pict = obj['picture']
+                picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
+                inv = pygame.image.load(picture_path).convert_alpha()
+                label = myfont.render(str(obj['nb']), 1, (255, 255, 0))
+                window.blit(inv, (c, r))
+                window.blit(label, (c + 40, r))
+                column += 1
+            # render text
+
+
+            pygame.display.flip()
 
         # check if conditions are satisfied
         if self.checked_conditions():
@@ -259,7 +309,7 @@ class Labyrinth:
         else:
             print("You loose...")
 
-    def move_player(self):
+    def move_player(self, key):
         """
         change player position on map according to button pressed
         and attributes of targetted position (Element) on the map
@@ -267,14 +317,13 @@ class Labyrinth:
         """
 
         keyboard_commands = {
-            'Z': (-1, 0),
-            'S': (0, 1),
-            'W': (1, 0),
-            'Q': (0, -1)
+            K_UP: (-1, 0),
+            K_RIGHT: (0, 1),
+            K_DOWN: (1, 0),
+            K_LEFT: (0, -1)
         }
-        next_direction = self.__ask_direction()
 
-        next_position = tuple(map(operator.add, self.player['position'], keyboard_commands[next_direction]))
+        next_position = tuple(map(operator.add, self.player['position'], keyboard_commands[key]))
 
         # check if new coordonates exist
         if self.__is_position_on_map(next_position):
@@ -286,10 +335,30 @@ class Labyrinth:
                 if self.__is_position_pickable(next_position):
                     # pick up object and add to inventory
                     gift = self.positions[next_position]
-                    self.player['inventory'][gift] = 1
+                    self.player['inventory'][gift.element_name]['nb'] += 1
                     print(self.player['inventory'])
                     self.positions[next_position] = Element.create_from_default_settings(
                         def_settings.DEFAULT_ELEMENT_TYPE)
+                return keyboard_commands[key]
+        return 0, 0
+
+    # GAME AND CONDITIONS CHEKING METHODS
+    def game_finished(self):
+        """
+        is player on exit
+        :return:
+        """
+        if self.player['position'] in self.exit_positions:
+            return True
+        else:
+            return self.quit
+
+    def checked_conditions(self):
+        """
+        are success condition satisfied
+        :return:
+        """
+        return Conditions.check_conditions(self)
 
     @staticmethod
     def __ask_direction():
@@ -301,21 +370,6 @@ class Labyrinth:
         while direction not in ('Z', 'S', 'W', 'Q'):
             direction = input("Choisir une direction Z,S,W,Q : ").upper()
         return direction
-
-    # GAME AND CONDITIONS CHEKING METHODS
-    def game_finished(self):
-        """
-        is player on exit
-        :return:
-        """
-        return self.player['position'] in self.exit_positions
-
-    def checked_conditions(self):
-        """
-        are success condition satisfied
-        :return:
-        """
-        return Conditions.check_conditions(self)
 
     # POSITIONS CHECKING METHODS
     def __is_position_on_map(self, position: tuple):
@@ -418,6 +472,9 @@ class Labyrinth:
             element = Element.create_from_default_settings(json_dict[char]['type'])
             element.element_name = json_dict[char]['name']
             element.symbol = char
+            if 'picture' in json_dict[char].keys():
+                element.picture = json_dict[char]['picture']
+
         except KeyError as e:
             logger.warning("%s :\n Element type of char %s not defined in %s. "
                            "Default type %s will be applied" % (e,
@@ -457,7 +514,6 @@ class Labyrinth:
             element_type = value['type']
             if def_settings.ELEMENTS_TYPE[element_type]['randomly_placed']:
                 objects_to_place[key] = value
-        print(objects_to_place)
         return objects_to_place
 
     def __randomly_place_inventory_objects_on_map(self, structure: dict):
@@ -494,6 +550,55 @@ class Labyrinth:
 
         return structure
 
+    def __get_elements_positions(self):
+        """
+        return a dictionary containing coordinates (tuple) of as keys and elements instances as values.
+        :return:
+        """
+        return self.__get_map_file_structure()
+
+    # CREATE AND PLACE PLAYER METHODS
+    def __create_player_element(self, player_name: str):
+        """
+        create player attribute values: element instance and initial position, and state
+        :return:
+        """
+        # TODO: Write unit test
+        authorized_symbol = list(set(def_settings.PLAYER_SYMBOLS).difference(self.used_char))
+        element = Element.create_from_default_settings(element_type=def_settings.PLAYER_TYPE)
+        element.element_name = player_name
+
+        if element.symbol in self.used_char:
+            element.symbol = authorized_symbol[0]
+
+        inventory = dict()
+        for key, obj in self.pickable_elements_position.items():
+            inventory[obj.element_name] = {'picture': obj.picture,
+                                           'nb': 0}
+
+        return dict(element=element, is_alive=True, position=tuple(), inventory=inventory)
+
+    def __get_player_initial_position(self):
+        """
+
+        :return: initial player position
+        """
+        self.player['position'] = self.start_position
+
+    @property
+    def pickable_elements_position(self):
+        """
+        extract all objects that can be picked up
+        :return:
+        """
+
+        pickable_objects = {}
+        for key, element in self.positions.items():
+            if not isinstance(element, str):
+                if element.can_be_picked_up:
+                    pickable_objects[key] = element
+        return pickable_objects
+
     @property
     def max_row_index(self):
         """
@@ -513,13 +618,6 @@ class Labyrinth:
         if self.positions != {}:
             return sorted([key[1] for key in self.positions.keys()])[-1]
         return 0
-
-    def __get_elements_positions(self):
-        """
-        return a dictionary containing coordinates (tuple) of as keys and elements instances as values.
-        :return:
-        """
-        return self.__get_map_file_structure()
 
     @property
     def start_position(self):
@@ -552,26 +650,3 @@ class Labyrinth:
             raise MissingElementException(self,
                                           'is_exit',
                                           "There is no exit point in this map. Please modify txt and json map file")
-
-    # CREATE AND PLACE PLAYER METHODS
-    def __create_player_element(self, player_name: str):
-        """
-        create player attribute values: element instance and initial position, and state
-        :return:
-        """
-        # TODO: Write unit test
-        authorized_symbol = list(set(def_settings.PLAYER_SYMBOLS).difference(self.used_char))
-        element = Element.create_from_default_settings(element_type=def_settings.PLAYER_TYPE)
-        element.element_name = player_name
-
-        if element.symbol in self.used_char:
-            element.symbol = authorized_symbol[0]
-
-        return dict(element=element, is_alive=True, position=tuple(), inventory=dict())
-
-    def __get_player_initial_position(self):
-        """
-
-        :return: initial player position
-        """
-        self.player['position'] = self.start_position

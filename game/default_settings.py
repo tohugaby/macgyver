@@ -51,7 +51,7 @@ ELEMENTS_TYPE = {
         'is_start': False,
         'is_exit': False,
         'is_player': False,
-        'picture': 'floor.png'
+        'picture': None #'floor.png'
 
     },
     'wall': {

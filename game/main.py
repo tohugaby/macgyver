@@ -14,10 +14,7 @@ def main():
         }
     })
     labyrinth = gc.Labyrinth(map_name='example_map', success_conditions=conditions, player_name='tom')
-    print(labyrinth.print_map())
-    print("\n")
     labyrinth.start_game()
-    print(labyrinth.print_map())
 
 
 if __name__ == '__main__':

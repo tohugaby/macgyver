@@ -13,15 +13,18 @@
   },
   "t": {
     "name": "tube",
-    "type": "inventory"
+    "type": "inventory",
+    "picture": "tube.png"
   },
   "n": {
     "name": "needle",
-    "type": "inventory"
+    "type": "inventory",
+    "picture": "needle.png"
   },
   "e": {
     "name": "ether",
-    "type": "inventory"
+    "type": "inventory",
+    "picture": "ether.png"
   },
   "g": {
     "name": "guard",
