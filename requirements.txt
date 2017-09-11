@@ -1,3 +1,4 @@
 pygame
 flake8
 pylint
+cx_freeze

@@ -1,4 +1,5 @@
 from distutils.core import setup
+from cx_Freeze import setup, Executable
 
 setup(
     name='macgyver',
@@ -8,5 +9,6 @@ setup(
     license='GNU GPLv3',
     author='Tom Gabrièle',
     author_email='',
-    description='A single level labyrinth game.'
+    description='A single level labyrinth game.',
+    executables = [Executable("game/main.py")]
 )

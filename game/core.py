@@ -18,7 +18,7 @@ from pygame.locals import QUIT, KEYDOWN, K_UP, K_RIGHT, K_DOWN, K_LEFT
 import game.default_settings as def_settings
 
 __author__ = 'tom.gabriele'
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 # logging.basicConfig(level=logging.DEBUG)
@@ -43,6 +43,9 @@ class Element:
     """
     Generic class which define either element of the map
     """
+
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-arguments
 
     def __init__(self, symbol=" ", element_name="default", walkable=True, can_be_picked_up=False,
                  randomly_placed=False, is_start=False, is_exit=False, is_player=False,
@@ -100,11 +103,10 @@ class Conditions:
             if key in self.valid_conditions:
                 setattr(self, key, value)
             else:
-                logger.warning(
+                LOGGER.warning(
                     "'%s' is not a valid condition. It means this condition will "
                     "not be added to %s instance and not checked "
-                    "because related functionality is not yet implemented." % (
-                        key, self.__class__))
+                    "because related functionality is not yet implemented.", key, self.__class__)
 
     def __repr__(self):
         conditions_repr = ""
@@ -165,8 +167,8 @@ class Conditions:
         for key, value in labyrinth.player['inventory'].items():
             new_key = key
             inventory[new_key] = value['nb']
-        logger.info("objects to pick up: {} ".format(getattr(self, attribute_name)))
-        logger.info("inventory : {}".format(inventory))
+        LOGGER.info("objects to pick up: %s ", getattr(self, attribute_name))
+        LOGGER.info("inventory : %s", inventory)
         return getattr(self, attribute_name) == inventory
 
 
@@ -191,7 +193,7 @@ class Labyrinth:
         self.quit = False
 
     def __repr__(self):
-        return "{}".format(self.map, self.print_map())
+        return "{}".format(self.print_map())
 
     # GAME METHODS
     def print_map(self):
@@ -202,33 +204,35 @@ class Labyrinth:
         """
         map_str = ''
 
-        for r in range(self.max_row_index + 1):
-            for c in range(self.max_column_index + 1):
+        for row in range(self.max_row_index + 1):
+            for column in range(self.max_column_index + 1):
                 try:
-                    if isinstance(self.positions[r, c], Element):
-                        if (r, c) == self.player['position']:
+                    if isinstance(self.positions[row, column], Element):
+                        if (row, column) == self.player['position']:
                             map_str += self.player['element'].symbol
                         else:
-                            map_str += self.positions[r, c].symbol
+                            map_str += self.positions[row, column].symbol
                     else:
-                        map_str += str(self.positions[r, c])
+                        map_str += str(self.positions[row, column])
                 except KeyError as e:
-                    if r == self.max_row_index and c == self.max_column_index:
+                    if row == self.max_row_index and column == self.max_column_index:
                         return map_str
                     else:
                         raise e
         return map_str
 
-    def draw_background(self):
+    @staticmethod
+    def draw_background():
         """
-
+        draw background of the game.
         :return:
         """
         background_path = os.path.join(def_settings.ROOT_PATH, 'media', 'background.jpg')
         background = pygame.image.load(background_path).convert()
         return background
 
-    def draw_element(self, element):
+    @staticmethod
+    def draw_element(element):
         """
         draw elements in graphical mod
         :param element:
@@ -254,8 +258,8 @@ class Labyrinth:
         execution of the game
         :return:
         """
-        logger.info(
-            "\nGetting initial position of player %s\n" % self.player['element'].element_name)
+        LOGGER.info(
+            "\nGetting initial position of player %s\n", self.player['element'].element_name)
         print("\nGetting initial position of player %s \n" % self.player['element'].element_name)
         continue_game = True
         self.__get_player_initial_position()
@@ -288,14 +292,14 @@ class Labyrinth:
             myfont = pygame.font.SysFont("monospace", 20)
             row, column = 1, 1
             for key, obj in self.player['inventory'].items():
-                r, c = row * 40, column * 40
+                ordinate, absciss = row * 40, column * 40
                 pict = obj['picture']
                 picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
                 inv = pygame.image.load(picture_path).convert_alpha()
                 # render text
                 label = myfont.render(str(obj['nb']), 1, (255, 255, 0))
-                window.blit(inv, (c, r))
-                window.blit(label, (c + 40, r))
+                window.blit(inv, (absciss, ordinate))
+                window.blit(label, (absciss + 40, ordinate))
                 column += 1
 
             pygame.display.flip()
@@ -408,7 +412,7 @@ class Labyrinth:
     # CREATE LABYRINTH ELEMENTS AND STRUCTURE METHODS
     def __get_map_files_path(self):
         """
-
+        get map et map dict files path
         :return:
         """
         map_file_name = self.map + '.txt'
@@ -416,10 +420,15 @@ class Labyrinth:
         map_files_path = None
 
         def search_file_in_folder(folder):
+            """
+            search map and map dict in given folder
+            :param folder:
+            :return:
+            """
             for root, dirs, files in os.walk(folder):
-                logger.info("Searching map...")
+                LOGGER.info("Searching map...")
                 if map_file_name in files and map_dict_file_name in files:
-                    logger.info("Map found !")
+                    LOGGER.info("Map found !")
                     return os.path.join(root, map_file_name), os.path.join(root,
                                                                            map_dict_file_name)
 
@@ -477,11 +486,9 @@ class Labyrinth:
                 element.picture = json_dict[char]['picture']
 
         except KeyError as e:
-            logger.warning("%s :\n Element type of char %s not defined in %s. "
-                           "Default type %s will be applied" % (e,
-                                                                char,
-                                                                json_dict,
-                                                                def_settings.DEFAULT_ELEMENT_TYPE))
+            LOGGER.warning("%s :\n Element type of char %s not defined in %s. "
+                           "Default type %s will be applied", e, char, json_dict,
+                           def_settings.DEFAULT_ELEMENT_TYPE)
             element = Element.create_from_default_settings(def_settings.DEFAULT_ELEMENT_TYPE)
             element.symbol = char
         except Exception:
@@ -520,12 +527,12 @@ class Labyrinth:
 
     def __randomly_place_inventory_objects_on_map(self, structure: dict):
         """
-
+        place element randomly on map
         :param structure:
         :return:
         """
         available_coordonates = self.__get_walkable_elements_coordonates(structure)
-        for key, element in self.__get_randomly_placed_elements().items():
+        for key in self.__get_randomly_placed_elements():
             i = random.randrange(len(available_coordonates))
             structure[available_coordonates[i]] = self.__create_element_from_map_files(key)
 
@@ -538,15 +545,15 @@ class Labyrinth:
         structure = {}
         with open(map_path, 'r') as file:
             lines = file.readlines()
-            r = 0
+            ordinate = 0
             for line in lines:
-                row = r
-                c = 0
+                row = ordinate
+                absciss = 0
                 for char in line:
-                    column = c
+                    column = absciss
                     structure[row, column] = self.__create_element_from_map_files(char)
-                    c += 1
-                r += 1
+                    absciss += 1
+                ordinate += 1
 
         self.__randomly_place_inventory_objects_on_map(structure)
 
