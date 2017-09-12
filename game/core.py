@@ -222,94 +222,151 @@ class Labyrinth:
         return map_str
 
     @staticmethod
-    def draw_background():
+    def __draw_window():
         """
-        draw background of the game.
+        Draw main window of the game.
+        :return:
+        """
+        return pygame.display.set_mode((600, 720))
+
+    @staticmethod
+    def __draw_title(window):
+        """
+        Draw title of the game.
+        :return:
+        """
+        title_font = pygame.font.SysFont("monospace", 20)
+        title = title_font.render("MACGYVER", 1, (255, 255, 0))
+        window.blit(title, (0, 0))
+
+    @staticmethod
+    def __draw_background(window):
+        """
+        Draw background of the game.
         :return:
         """
         background_path = os.path.join(def_settings.ROOT_PATH, 'media', 'background.jpg')
         background = pygame.image.load(background_path).convert()
-        return background
+        window.blit(background, (0, 120))
 
     @staticmethod
-    def draw_element(element):
+    def __draw_element(window, element, coordinates):
         """
-        draw elements in graphical mod
-        :param element:
-        :return:
+        Draw elements in graphical mod.
+        :param element: An Element instance.
+        :return: A sprite with attached picture.
         """
+        absciss, ordonate = coordinates
         pict = element.picture
         picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
         sprite = pygame.image.load(picture_path).convert_alpha()
-        return sprite
+        window.blit(sprite, (absciss * 40, ordonate * 40 + 120))
 
-    def draw_player(self):
+    def __draw_player(self, window):
         """
         draw player in graphical mod
-        :return:
+        :return: The player sprite and its position.
         """
         player = self.player['element'].picture
         player_picture_path = os.path.join(def_settings.ROOT_PATH, 'media', player)
         player_sprite = pygame.image.load(player_picture_path).convert_alpha()
-        return player_sprite
+        player_position = player_sprite.get_rect()
+        player_position.top, player_position.left = tuple(
+            [40 * i for i in list(self.player['position'])])
+        player_position.top += 120
+        window.blit(player_sprite, player_position)
 
-    def start_game(self):
+    def __draw_inventory(self, window):
         """
-        execution of the game
+        Draw game inventory.
+        :param window: a pygame Surface instance
         :return:
         """
+        myfont = pygame.font.SysFont("monospace", 20)
+        column, row = 1, 1
+        for obj in self.player['inventory'].values():
+            absciss, ordinate = column * 40, row * 40
+            pict = obj['picture']
+            picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
+            inv = pygame.image.load(picture_path).convert_alpha()
+            # render text
+            label = myfont.render(str(obj['nb']), 1, (255, 255, 0))
+            window.blit(inv, (absciss, ordinate))
+            window.blit(label, (absciss + 40, ordinate))
+            column += 1
+
+    def play_game(self):
+        """
+        Execution of the game
+        :return:
+        """
+        continue_game = True
+
+        # Initialize pygame module
+        pygame.init()
+        pygame.key.set_repeat(400, 30)
+
+        # Draw game's window
+        window = self.__draw_window()
+
+        # Get position of the player on the map.
         LOGGER.info(
             "\nGetting initial position of player %s\n", self.player['element'].element_name)
         print("\nGetting initial position of player %s \n" % self.player['element'].element_name)
-        continue_game = True
         self.__get_player_initial_position()
-        pygame.init()
-        pygame.key.set_repeat(400, 30)
-        window = pygame.display.set_mode((600, 720))
-        player_sprite = self.draw_player()
-        player_position = player_sprite.get_rect()
-        player_position.top, player_position.left = tuple(
-            [40 * i for i in self.player['position']])
-        player_position.top += 120
 
+        # main loop of the game
         while continue_game:
+
+            # Try to save CPU time
+            pygame.time.wait(50)
+
+            # Draw Game Title
+            self.__draw_title(window)
+
+            # Draw background of the game.
+            self.__draw_background(window)
+
+            # Draw every element of the map.
+            for key, element in self.positions.items():
+                if not isinstance(element, str):
+                    ordonate, absciss = key
+                    coordinates = absciss, ordonate
+                    if element.picture is not None:
+                        self.__draw_element(window, element, coordinates)
+
+            # Events watcher
             for event in pygame.event.get():
+                # if player clic on top right cross button.
                 if event.type == QUIT:
                     continue_game = False
                 if event.type == KEYDOWN:
-                    line_move, column_move = self.move_player(event.key)
-                    player_position = player_position.move(column_move * 40, line_move * 40)
+                    # Change player position and check if game is finished.
+                    self.move_player(event.key)
                     continue_game = not self.game_finished()
 
-            window.blit(self.draw_background(), (0, 120))
-            for key, element in self.positions.items():
-                if not isinstance(element, str):
-                    row, col = key
-                    if element.picture is not None:
-                        window.blit(self.draw_element(element), (col * 40, row * 40 + 120))
-            window.blit(player_sprite, player_position)
+            # Draw player
+            self.__draw_player(window)
 
-            myfont = pygame.font.SysFont("monospace", 20)
-            row, column = 1, 1
-            for key, obj in self.player['inventory'].items():
-                ordinate, absciss = row * 40, column * 40
-                pict = obj['picture']
-                picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
-                inv = pygame.image.load(picture_path).convert_alpha()
-                # render text
-                label = myfont.render(str(obj['nb']), 1, (255, 255, 0))
-                window.blit(inv, (absciss, ordinate))
-                window.blit(label, (absciss + 40, ordinate))
-                column += 1
+            # Draw inventory
+            self.__draw_inventory(window)
 
-            pygame.display.flip()
+            # Check if conditions are satisfied
+            if not continue_game:
+                window = self.__draw_window()
+                result_font = pygame.font.SysFont("monospace", 50)
+                if self.checked_conditions():
+                    message = "You win ;) !!!"
+
+                else:
+                    message = "You loose :( ..."
+                result = result_font.render(message, 1, (255, 255, 0))
+                window.blit(result, (50, 100))
+                pygame.display.update()
+                pygame.time.wait(2000)
+
+            pygame.display.update()
             window.fill((0, 0, 0))
-
-        # check if conditions are satisfied
-        if self.checked_conditions():
-            print("You win !")
-        else:
-            print("You loose...")
 
     def move_player(self, key):
         """
@@ -324,8 +381,12 @@ class Labyrinth:
             K_DOWN: (1, 0),
             K_LEFT: (0, -1)
         }
-
-        next_position = tuple(map(operator.add, self.player['position'], keyboard_commands[key]))
+        # Deals with case pressed key is not in keyboard commands
+        try:
+            next_position = tuple(
+                map(operator.add, self.player['position'], keyboard_commands[key]))
+        except KeyError:
+            next_position = self.player['position']
 
         # check if new coordonates exist
         if self.__is_position_on_map(next_position):
@@ -341,8 +402,6 @@ class Labyrinth:
                     print(self.player['inventory'])
                     self.positions[next_position] = Element.create_from_default_settings(
                         def_settings.DEFAULT_ELEMENT_TYPE)
-                return keyboard_commands[key]
-        return 0, 0
 
     # GAME AND CONDITIONS CHEKING METHODS
     def game_finished(self):
@@ -501,7 +560,7 @@ class Labyrinth:
     @staticmethod
     def __get_walkable_elements_coordonates(structure):
         """
-        list coordonates of walkable element of the map
+        List coordonates of walkable element of the map
         :param structure:
         :return:
         """
@@ -514,7 +573,7 @@ class Labyrinth:
 
     def __get_randomly_placed_elements(self):
         """
-        extract randomly placed elements from description json file
+        Extract randomly placed elements from description json file
         :return:
         """
         objects_to_place = {}

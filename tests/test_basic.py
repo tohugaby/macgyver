@@ -1,6 +1,12 @@
+# -*- coding:utf-8 -*-
+# for python 2.7 only
+# from __future__ import print_function, unicode_literals, absolute_import
+
+"""
+Module to make basic unit tests
+"""
 import os
 import sys
-
 import unittest
 
 import game.core as gc
@@ -48,7 +54,8 @@ class TestConditions(unittest.TestCase):
         """
         condition = gc.Conditions(**self.condition_dict)
         assert hasattr(condition, "to_pick_up_objects")
-        self.assertEqual(condition.__repr__(), "to_pick_up_objects : {'needle': 1, 'small_tube': 1, 'ether': 1}")
+        self.assertEqual(condition.__repr__(),
+                         "to_pick_up_objects : {'needle': 1, 'small_tube': 1, 'ether': 1}")
 
     def test_create_condition_with_unrecognized_conditions(self):
         """
@@ -58,7 +65,8 @@ class TestConditions(unittest.TestCase):
         condition = gc.Conditions(**self.condition_dict2)
         assert hasattr(condition, "to_pick_up_objects")
         assert not hasattr(condition, "to_walk_on_zone")
-        self.assertEqual(condition.__repr__(), "to_pick_up_objects : {'needle': 1, 'small_tube': 1, 'ether': 1}")
+        self.assertEqual(condition.__repr__(),
+                         "to_pick_up_objects : {'needle': 1, 'small_tube': 1, 'ether': 1}")
 
     def test_create_empty_condition(self):
         """
@@ -107,7 +115,7 @@ class TestElement(unittest.TestCase):
 
     def test_create_element_from_settings(self):
         """
-        test Element creation of Element instance from settings
+        Tests element creation of Element's instances from settings.
         :return:
         """
         for element_type in gc.Element.get_elements_types_list():
@@ -117,9 +125,12 @@ class TestElement(unittest.TestCase):
 
 
 class TestLabyrinth(unittest.TestCase):
+    """
+    Test class for Labyrinth.
+    """
     def setUp(self):
         """
-        define all test's data.
+        Define all test's data.
         :return:
         """
         self.labyrinth = {
@@ -176,7 +187,8 @@ class TestLabyrinth(unittest.TestCase):
         creation
         :return:
         """
-        lab = gc.Labyrinth(self.labyrinth['map'], self.labyrinth['conditions'], self.labyrinth['player_name'])
+        lab = gc.Labyrinth(self.labyrinth['map'], self.labyrinth['conditions'],
+                           self.labyrinth['player_name'])
         self.assertEqual(lab.map, self.labyrinth['map'])
         self.assertEqual(lab.__repr__(), self.labyrinth['map'])
         self.assertEqual(lab.player['element'].element_name, self.labyrinth['player_name'])
@@ -203,7 +215,8 @@ class TestLabyrinth(unittest.TestCase):
 
         :return:
         """
-        lab = gc.Labyrinth(self.labyrinth['map'], self.labyrinth['conditions'], self.labyrinth['player_name'])
+        lab = gc.Labyrinth(self.labyrinth['map'], self.labyrinth['conditions'],
+                           self.labyrinth['player_name'])
         lab.player['position'] = (0, 1)
         # Test print map metho
         self.assertEqual(lab.print_map(), self.map_str_with_player)
@@ -218,5 +231,6 @@ class TestLabyrinth(unittest.TestCase):
         :return:
         """
         with self.assertRaises(FileNotFoundError):
-            gc.Labyrinth(self.labyrinth_unavailable_map['map'], self.labyrinth_unavailable_map['conditions'],
+            gc.Labyrinth(self.labyrinth_unavailable_map['map'],
+                         self.labyrinth_unavailable_map['conditions'],
                          self.labyrinth_unavailable_map['player_name'])

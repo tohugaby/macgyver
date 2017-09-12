@@ -12,7 +12,7 @@ import os
 import string
 
 __author__ = 'tom.gabriele'
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 ROOT_PATH = os.path.dirname(__file__)
 
@@ -96,9 +96,11 @@ PLAYER_SYMBOLS = list(set(['X', '@', '0', '&'] + list(string.punctuation)))
 
 DEFAULT_PICTURE = 'default.png'
 
-# a list of all path containing maps (makes game possibilities scalable and makes unit tests easier)
+# a list of all path containing maps (makes game possibilities scalable and makes unit tests
+# easiest)
 MAP_FOLDER_PATH_LIST = [
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'maps'),
     os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'game', 'maps'),
-    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'game', 'maps', 'example'),
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'game', 'maps',
+                 'example'),
 ]
