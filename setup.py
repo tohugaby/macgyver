@@ -1,7 +1,14 @@
+import logging
 import platform
 import os
 from distutils.core import setup
+
+
 from cx_Freeze import setup, Executable
+
+
+print(platform.system())
+
 
 if platform.system() == 'Windows':
     os.environ['TCL_LIBRARY'] = "C:\\Users\\sylvie\\AppData\\Local\\Programs\\Python\\Python36-32\\tcl\\tcl8.6"
