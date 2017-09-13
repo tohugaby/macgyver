@@ -1,19 +1,18 @@
-import logging
 import platform
 import os
 from distutils.core import setup
 
-
 from cx_Freeze import setup, Executable
 
-
-print(platform.system())
-
-
-if platform.system() == 'Windows':
-    os.environ['TCL_LIBRARY'] = "C:\\Users\\sylvie\\AppData\\Local\\Programs\\Python\\Python36-32\\tcl\\tcl8.6"
-    os.environ['TK_LIBRARY'] = "C:\\Users\\sylvie\\AppData\\Local\\Programs\\Python\\Python36-32\\tcl\\tk8.6"
-
+# Add manually these environnement variable on windows
+# set TCL_LIBRARY=C:\Users\sylvie\AppData\Local\Programs\Python\Python36-32\tcl\tcl8.6
+# set TK_LIBRARY=C:\Users\sylvie\AppData\Local\Programs\Python\Python36-32\tcl\tk8.6
+# or use this syntaxe
+# if platform.system() == 'Windows':
+#     os.environ[
+#         'TCL_LIBRARY'] = "C:\\Users\\sylvie\\AppData\\Local\\Programs\\Python\\Python36-32\\tcl\\tcl8.6"
+#     os.environ[
+#         'TK_LIBRARY'] = "C:\\Users\\sylvie\\AppData\\Local\\Programs\\Python\\Python36-32\\tcl\\tk8.6"
 
 setup(
     name='macgyver',
