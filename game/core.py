@@ -195,7 +195,7 @@ class Labyrinth:
     def __repr__(self):
         return "{}".format(self.print_map())
 
-    # GAME METHODS
+    # GAME AND CONDITIONS CHECKING METHODS
     def print_map(self):
         """
         print a CLI representation of the map acccording to self.positions
@@ -220,80 +220,6 @@ class Labyrinth:
                     else:
                         raise e
         return map_str
-
-    @staticmethod
-    def __draw_window():
-        """
-        Draw main window of the game.
-        :return:
-        """
-        return pygame.display.set_mode((600, 720))
-
-    @staticmethod
-    def __draw_title(window):
-        """
-        Draw title of the game.
-        :return:
-        """
-        title_font = pygame.font.SysFont("monospace", 20)
-        title = title_font.render("MACGYVER", 1, (255, 255, 0))
-        window.blit(title, (0, 0))
-
-    @staticmethod
-    def __draw_background(window):
-        """
-        Draw background of the game.
-        :return:
-        """
-        background_path = os.path.join(def_settings.ROOT_PATH, 'media', 'background.jpg')
-        background = pygame.image.load(background_path).convert()
-        window.blit(background, (0, 120))
-
-    @staticmethod
-    def __draw_element(window, element, coordinates):
-        """
-        Draw elements in graphical mod.
-        :param element: An Element instance.
-        :return: A sprite with attached picture.
-        """
-        absciss, ordonate = coordinates
-        pict = element.picture
-        picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
-        sprite = pygame.image.load(picture_path).convert_alpha()
-        window.blit(sprite, (absciss * 40, ordonate * 40 + 120))
-
-    def __draw_player(self, window):
-        """
-        draw player in graphical mod
-        :return: The player sprite and its position.
-        """
-        player = self.player['element'].picture
-        player_picture_path = os.path.join(def_settings.ROOT_PATH, 'media', player)
-        player_sprite = pygame.image.load(player_picture_path).convert_alpha()
-        player_position = player_sprite.get_rect()
-        player_position.top, player_position.left = tuple(
-            [40 * i for i in list(self.player['position'])])
-        player_position.top += 120
-        window.blit(player_sprite, player_position)
-
-    def __draw_inventory(self, window):
-        """
-        Draw game inventory.
-        :param window: a pygame Surface instance
-        :return:
-        """
-        myfont = pygame.font.SysFont("monospace", 20)
-        column, row = 1, 1
-        for obj in self.player['inventory'].values():
-            absciss, ordinate = column * 40, row * 40
-            pict = obj['picture']
-            picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
-            inv = pygame.image.load(picture_path).convert_alpha()
-            # render text
-            label = myfont.render(str(obj['nb']), 1, (255, 255, 0))
-            window.blit(inv, (absciss, ordinate))
-            window.blit(label, (absciss + 40, ordinate))
-            column += 1
 
     def play_game(self):
         """
@@ -403,7 +329,6 @@ class Labyrinth:
                     self.positions[next_position] = Element.create_from_default_settings(
                         def_settings.DEFAULT_ELEMENT_TYPE)
 
-    # GAME AND CONDITIONS CHEKING METHODS
     def game_finished(self):
         """
         is player on exit
@@ -431,6 +356,81 @@ class Labyrinth:
         while direction not in ('Z', 'S', 'W', 'Q'):
             direction = input("Choisir une direction Z,S,W,Q : ").upper()
         return direction
+
+    # DRAWING METHODS
+    @staticmethod
+    def __draw_window():
+        """
+        Draw main window of the game.
+        :return:
+        """
+        return pygame.display.set_mode((600, 720))
+
+    @staticmethod
+    def __draw_title(window):
+        """
+        Draw title of the game.
+        :return:
+        """
+        title_font = pygame.font.SysFont("monospace", 20)
+        title = title_font.render("MACGYVER", 1, (255, 255, 0))
+        window.blit(title, (0, 0))
+
+    @staticmethod
+    def __draw_background(window):
+        """
+        Draw background of the game.
+        :return:
+        """
+        background_path = os.path.join(def_settings.ROOT_PATH, 'media', 'background.jpg')
+        background = pygame.image.load(background_path).convert()
+        window.blit(background, (0, 120))
+
+    @staticmethod
+    def __draw_element(window, element, coordinates):
+        """
+        Draw elements in graphical mod.
+        :param element: An Element instance.
+        :return: A sprite with attached picture.
+        """
+        absciss, ordonate = coordinates
+        pict = element.picture
+        picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
+        sprite = pygame.image.load(picture_path).convert_alpha()
+        window.blit(sprite, (absciss * 40, ordonate * 40 + 120))
+
+    def __draw_player(self, window):
+        """
+        draw player in graphical mod
+        :return: The player sprite and its position.
+        """
+        player = self.player['element'].picture
+        player_picture_path = os.path.join(def_settings.ROOT_PATH, 'media', player)
+        player_sprite = pygame.image.load(player_picture_path).convert_alpha()
+        player_position = player_sprite.get_rect()
+        player_position.top, player_position.left = tuple(
+            [40 * i for i in list(self.player['position'])])
+        player_position.top += 120
+        window.blit(player_sprite, player_position)
+
+    def __draw_inventory(self, window):
+        """
+        Draw game inventory.
+        :param window: a pygame Surface instance
+        :return:
+        """
+        myfont = pygame.font.SysFont("monospace", 20)
+        column, row = 1, 1
+        for obj in self.player['inventory'].values():
+            absciss, ordinate = column * 40, row * 40
+            pict = obj['picture']
+            picture_path = os.path.join(def_settings.ROOT_PATH, 'media', pict)
+            inv = pygame.image.load(picture_path).convert_alpha()
+            # render text
+            label = myfont.render(str(obj['nb']), 1, (255, 255, 0))
+            window.blit(inv, (absciss, ordinate))
+            window.blit(label, (absciss + 40, ordinate))
+            column += 1
 
     # POSITIONS CHECKING METHODS
     def __is_position_on_map(self, position: tuple):
@@ -528,7 +528,6 @@ class Labyrinth:
         between characters in map dict and ELEMENTS_TYPE default behavior is applied:
         unknow character get a DEFAULT_ELEMENT_TYPE.
         :param char:
-        :param dict_path:
         :return:
         """
         if char == '\n':
@@ -586,7 +585,7 @@ class Labyrinth:
 
     def __randomly_place_inventory_objects_on_map(self, structure: dict):
         """
-        place element randomly on map
+        Places element randomly on the map.
         :param structure:
         :return:
         """
@@ -594,10 +593,12 @@ class Labyrinth:
         for key in self.__get_randomly_placed_elements():
             i = random.randrange(len(available_coordonates))
             structure[available_coordonates[i]] = self.__create_element_from_map_files(key)
+            del available_coordonates[i]
 
     def __get_map_file_structure(self):
         """
-
+        Transforms map to dictionnary with a tuple of absciss and ordinate as key and Element
+        instance as value.
         :return:
         """
         map_path = self.__get_map_files_path()[0]
@@ -654,6 +655,7 @@ class Labyrinth:
         """
         self.player['position'] = self.start_position
 
+    # PROPERTIES
     @property
     def pickable_elements_position(self):
         """
