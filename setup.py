@@ -1,5 +1,12 @@
+import platform
+import os
 from distutils.core import setup
 from cx_Freeze import setup, Executable
+
+if platform.system() == 'Windows':
+    os.environ['TCL_LIBRARY'] = "C:\\Users\\sylvie\\AppData\\Local\\Programs\\Python\\Python36-32\\tcl\\tcl8.6"
+    os.environ['TK_LIBRARY'] = "C:\\Users\\sylvie\\AppData\\Local\\Programs\\Python\\Python36-32\\tcl\\tk8.6"
+
 
 setup(
     name='macgyver',
