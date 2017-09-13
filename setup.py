@@ -10,5 +10,6 @@ setup(
     author='Tom Gabrièle',
     author_email='',
     description='A single level labyrinth game.',
-    executables = [Executable("game/main.py")]
+    options={"build_exe": {"packages": ["pygame"], "include_files": ["game/maps", "game/media"]}},
+    executables=[Executable("game/main.py")]
 )
