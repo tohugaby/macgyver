@@ -373,7 +373,6 @@ class GenericLabyrinth:
             return char
 
         json_dict = self.__map_json_to_dict()
-        # TODO: Write unit test when nothing provided in json file or missing type
         try:
             element = Element.create_from_default_settings(json_dict[char]['type'])
             element.element_name = json_dict[char]['name']
@@ -450,7 +449,7 @@ class GenericLabyrinth:
         create player attribute values: element instance and initial position, and state
         :return:
         """
-        # TODO: Write unit test
+
         authorized_symbol = list(set(def_settings.PLAYER_SYMBOLS).difference(self.used_char))
         element = Element.create_from_default_settings(element_type=def_settings.PLAYER_TYPE)
         element.element_name = player_name
@@ -580,14 +579,19 @@ class CommandLineLabyrinth(GenericLabyrinth):
         return map_str
 
     def play_game(self):
+        """
+        Execution of the game
+        :return:
+        """
         LOGGER.info(
-            "\nGetting initial position of player %s\n" % self.player['element'].element_name)
+            "\nGetting initial position of player %s\n", self.player['element'].element_name)
         print("\nGetting initial position of player %s \n" % self.player['element'].element_name)
         self.get_player_initial_position()
-
+        print(self.print_map())
         while not self.game_finished():
             self.checked_conditions()
-            self.move_player()
+            next_direction = self.__ask_direction()
+            self.move_player(next_direction)
             print(self.print_map())
 
         # check if conditions are satisfied
