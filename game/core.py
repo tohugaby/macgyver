@@ -579,6 +579,23 @@ class CommandLineLabyrinth(GenericLabyrinth):
                         raise e
         return map_str
 
+    def play_game(self):
+        LOGGER.info(
+            "\nGetting initial position of player %s\n" % self.player['element'].element_name)
+        print("\nGetting initial position of player %s \n" % self.player['element'].element_name)
+        self.get_player_initial_position()
+
+        while not self.game_finished():
+            self.checked_conditions()
+            self.move_player()
+            print(self.print_map())
+
+        # check if conditions are satisfied
+        if self.checked_conditions():
+            print("You win !")
+        else:
+            print("You loose...")
+
     @staticmethod
     def __ask_direction():
         """
