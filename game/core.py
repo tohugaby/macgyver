@@ -534,8 +534,7 @@ class Labyrinth:
             return char
 
         json_dict = self.__map_json_to_dict()
-        # TODO: Write unit test :when their is nothing provided in json file or their is a missing
-        # type
+        # TODO: Write unit test when nothing provided in json file or missing type
         try:
             element = Element.create_from_default_settings(json_dict[char]['type'])
             element.element_name = json_dict[char]['name']
