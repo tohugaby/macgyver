@@ -12,6 +12,12 @@ def main():
     Function that execute the program
     :return:
     """
+
+    CHOICES = [
+        ('Mode Graphique', gc.GraphicalLabyrinth),
+        ('Mode Console', gc.CommandLineLabyrinth),
+    ]
+
     conditions = gc.Conditions(**{
         "to_pick_up_objects": {
             "needle": 1,
@@ -19,8 +25,15 @@ def main():
             "ether": 1
         }
     })
-    labyrinth = gc.Labyrinth(map_name='example_map', success_conditions=conditions,
-                             player_name='tom')
+
+    mod_question = "Salut fan de MacGyver! \nChoisis un mode de jeux: \n{}:{}\n" \
+                   "{}:{}\n".format(0, CHOICES[0][0], 1, CHOICES[1][0])
+    choice = str()
+    while choice not in [str(i) for i in range(len(CHOICES))]:
+        choice = input(mod_question)
+
+    game_mod = CHOICES[int(choice)][1]
+    labyrinth = game_mod(map_name='example_map', success_conditions=conditions, player_name='tom')
     labyrinth.play_game()
 
 

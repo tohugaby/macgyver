@@ -126,7 +126,7 @@ class TestElement(unittest.TestCase):
 
 class TestLabyrinth(unittest.TestCase):
     """
-    Test class for Labyrinth.
+    Test class for CommandLineLabyrinth.
     """
     def setUp(self):
         """
@@ -182,13 +182,13 @@ class TestLabyrinth(unittest.TestCase):
     def test_create_labyrinth(self):
         """
         test
-        Labyrinth
+        CommandLineLabyrinth
         instance
         creation
         :return:
         """
-        lab = gc.Labyrinth(self.labyrinth['map'], self.labyrinth['conditions'],
-                           self.labyrinth['player_name'])
+        lab = gc.CommandLineLabyrinth(self.labyrinth['map'], self.labyrinth['conditions'],
+                                    self.labyrinth['player_name'])
         self.assertEqual(lab.map, self.labyrinth['map'])
         self.assertEqual(lab.__repr__(), self.labyrinth['map'])
         self.assertEqual(lab.player['element'].element_name, self.labyrinth['player_name'])
@@ -215,8 +215,8 @@ class TestLabyrinth(unittest.TestCase):
 
         :return:
         """
-        lab = gc.Labyrinth(self.labyrinth['map'], self.labyrinth['conditions'],
-                           self.labyrinth['player_name'])
+        lab = gc.CommandLineLabyrinth(self.labyrinth['map'], self.labyrinth['conditions'],
+                                    self.labyrinth['player_name'])
         lab.player['position'] = (0, 1)
         # Test print map metho
         self.assertEqual(lab.print_map(), self.map_str_with_player)
@@ -224,13 +224,13 @@ class TestLabyrinth(unittest.TestCase):
     def test_create_labyrinth_with_bad_map_name(self):
         """
         test
-        Labyrinth
+        CommandLineLabyrinth
         instance
         creation
         with an unavailable map file
         :return:
         """
         with self.assertRaises(FileNotFoundError):
-            gc.Labyrinth(self.labyrinth_unavailable_map['map'],
-                         self.labyrinth_unavailable_map['conditions'],
-                         self.labyrinth_unavailable_map['player_name'])
+            gc.CommandLineLabyrinth(self.labyrinth_unavailable_map['map'],
+                                  self.labyrinth_unavailable_map['conditions'],
+                                  self.labyrinth_unavailable_map['player_name'])
